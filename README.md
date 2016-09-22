@@ -1,2 +1,2 @@
 # ChatJavaMultThread
-Chat mult users using Socket TCP!
+Chat multiusers using Socket TCP!
