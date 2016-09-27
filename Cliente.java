@@ -3,45 +3,76 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
-public class Cliente {
-		public static void main(String[] args) throws IOException {
+public class Cliente extends Thread
+{
+	Socket cliente;
+
+	public Cliente(Socket s)
+	{
+		cliente = s;
+
+	}
+
+	public static void main(String[] args) throws IOException
+	{
 		System.out.println("Cliente Ativo!");
-		
+
 		String msg_digitada; // mensagem digitada
 		String msg_recebida; // mensagem recebida
 		String nome_cliente; // nome do cliente
-		// cria o stream do teclado
+		String assunto_cliente = null; // assunto do cliente
+
+		// cria o stream do teclado			
 		BufferedReader teclado = new BufferedReader(new InputStreamReader(System.in));
-		// solicita um nome para o cliente
-		System.out.println("Informe o nome do cliente:");
-		nome_cliente = teclado.readLine();
+
 		// cria o socket de acesso ao server hostname na porta 8657
 		Socket cliente = new Socket("localhost", 8657);
-		System.out.println(nome_cliente + " entrou no chat!");
+		System.out.println("Você entrou no chat!"); //nome_cliente +
+
 		// cria os streams de entrada e saida com o servidor
 		DataOutputStream saida_servidor = new DataOutputStream(cliente.getOutputStream());
-		BufferedReader entrada_servidor = new BufferedReader(new
-		InputStreamReader(cliente.getInputStream()));
-		while (true) {
-		// le uma linha do teclado
-		msg_digitada = teclado.readLine();
-		// testa se o chat deve ser finalizado
-		if (msg_digitada.startsWith("fim") == true)
-		break;
-		// envia a linha para o servidor
-		saida_servidor.writeBytes(msg_digitada + '\n');
-		// lê uma linha do servidor
-		msg_recebida = entrada_servidor.readLine();
-		// apresenta a linha do servidor na console
-		System.out.println("Servidor: " + msg_recebida);
+
+		Thread t = new Cliente(cliente);
+		t.start();   
+
+
+		while (true)
+		{
+			msg_digitada = teclado.readLine(); // le uma linha do teclado
+
+			if (msg_digitada.startsWith("fim") == true) // testa se o chat deve ser finalizado
+				break;
+
+			saida_servidor.writeBytes(msg_digitada + '\n'); // envia a linha para o servidor
+
+
 		}
 		// fecha o cliente
 		cliente.close();
-		System.out.println(nome_cliente + " saiu do chat!");
+		System.out.println("Você saiu do chat!");
+	}
+
+	public void run()
+	{
+		String msg_recebida;
+		while (true)
+		{		
+			try
+			{
+				BufferedReader entrada_servidor = new BufferedReader(new InputStreamReader(cliente.getInputStream()));
+				msg_recebida = entrada_servidor.readLine();
+				System.out.println(msg_recebida); 
+			}
+			catch (IOException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-		
-	
-	
-	
+	}
+
 }
